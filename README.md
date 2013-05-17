@@ -10,6 +10,8 @@ Among the most notable things are **DoubleEdge**, **Eloquent** and **HLEx** clas
 
 **HLEx** is an addendum to Laravel's `HTML` class with some useful functions.
 
+Plarx also contains routines to replace default `application/start.php` code - for this add `'startApp' => true` to its entry in `application/bundles.php` and feel free to clear `start.php` from the old code.
+
 Source code is extensively documented with examples so please refer to it for more information. Feel free to drop by [Laravel.ru](http://laravel.ru)'s forums.
 
 Contact  me at proger.xp@gmail.com or see my homepage at http://proger.me.
