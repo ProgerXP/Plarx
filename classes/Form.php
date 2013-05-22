@@ -87,7 +87,7 @@ class Form extends \Laravel\Form {
   //* $errors obj Validator, obj Messages, hash of str - key is field name, value
   //  is the error message (HTML is escaped).
   //= str HTML, null if $errors is empty
-  static function htmlErrors($errors) {
+  static function htmlErrors($errors, $class = 'form-errors') {
     $errors instanceof \Laravel\Validator and $errors = $errors->errors;
     $errors instanceof \Laravel\Messages and $errors = $errors->messages;
 
@@ -98,7 +98,7 @@ class Form extends \Laravel\Form {
         $result .= join(array_map(array('HLEx', 'li_q'), $set));
       }
 
-      return HLEx::ol($result);
+      return HLEx::ol($result, $class);
     }
   }
 
