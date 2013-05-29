@@ -53,6 +53,28 @@ class Eloquent extends \Laravel\Database\Eloquent\Model {
     return new Query($this);
   }
 
+  function idString($title = null) {
+    if (!func_num_args()) {
+      $title = isset($this->title) ? $this->title :
+               (isset($this->name) ? $this->name : '');
+    }
+
+    $class = get_class($this);
+    $id = $this->id ? "$class #{$this->id}" : "unsaved $class";
+
+    "$title" === '' or $id .= " ($title)";
+    return $id;
+  }
+
+  // Used in debug/error messages.
+  //
+  //? throw new Exception("Cannot update $model.");
+  //    //=> "Cannot update ModelName #33 (Title here)."
+  //
+  function __toString() {
+    return $this->idString();
+  }
+
   function getTimestampAttribute($attribute) {
     $value = $this->get_attribute($attribute);
 

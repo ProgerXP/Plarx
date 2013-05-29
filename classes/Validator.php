@@ -2,25 +2,35 @@
 
 class Validator extends \Laravel\Validator {
   // The 'format' rule fills this with detected format names.
+  //
   //= hash key is attribute name, value is false (no format matched) or string
+  //
   //? array('logo' => 'gif', 'splash' => false)
   public $formats = array();
 
   // Unlike default has all arguments optional (useful for creating an empty
   // validator for filling with messages later) and auto-converts $attributes to array.
+  //
   //= Validator
   static function make($attributes = array(), $rules = array(), $messages = array()) {
     return parent::make((array) $attributes, $rules, (array) $messages);
   }
 
   // Creates an empty validator with one error message.
+  //
   //* $attribute str - attribute name that contains an error
-  //* $rule str - rule name that has failed
+  //* $rule str - rule name that has failed; can be prefixed with 'bundle::' to
+  //  set $this->bundle to it (thus using its language file).
   //* $params array, scalar converted to array - error details for $rule
+  //
   //= Validator
   static function withError($attribute, $rule, $params = array()) {
+    list($bundle, $rule) = \Bundle::parse($rule);
+
     $valid = static::make();
+    $valid->bundle = $bundle;
     $valid->error($attribute, $rule, $params);
+
     return $valid;
   }
 
@@ -31,6 +41,7 @@ class Validator extends \Laravel\Validator {
 
   // Unlike default $params are optional and the method is public to allow
   // creation of custom validation messages for a controller's response.
+  //
   //= true for convenient usage in rules' functions' return's.
   function error($attribute, $rule, $params = array()) {
     $this->errors or $this->errors = new \Laravel\Messages;
@@ -41,6 +52,7 @@ class Validator extends \Laravel\Validator {
   }
 
   // Unlike default replaces $message with values from $params (':key' -> value).
+  //
   //= str formatted message
   protected function replace($message, $attribute, $rule, $params) {
     $message = parent::replace($message, $attribute, $rule, $params);
@@ -78,7 +90,8 @@ class Validator extends \Laravel\Validator {
 
   // Passes files that have been successfully and fully uploaded.
   protected function validate_upload($attribute, $upload) {
-    return is_uploaded_file($upload['tmp_name']) and !$upload['error'];
+    return is_array($upload) and is_uploaded_file($upload['tmp_name']) and
+           !$upload['error'];
   }
 
   // Passes files that were uploaded fine and are images. Takes two parameters:
@@ -125,10 +138,12 @@ class Validator extends \Laravel\Validator {
   //
   //? format:jpg,png - image must be either JPEG or PNG
   protected function validate_format($attribute, $upload, $formats) {
-    foreach ((array) $formats as $format) {
-      if ($this->checkImageFormat($attribute, $format, $upload['tmp_name'])) {
-        $this->formats[$attribute] = $format;
-        return true;
+    if ($this->validate_upload($attribute, $upload)) {
+      foreach ((array) $formats as $format) {
+        if ($this->checkImageFormat($attribute, $format, $upload['tmp_name'])) {
+          $this->formats[$attribute] = $format;
+          return true;
+        }
       }
     }
 
