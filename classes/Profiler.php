@@ -17,9 +17,9 @@ class Profiler extends \Laravel\Profiling\Profiler {
     $self = get_called_class();
 
     foreach (static::$override as $event) {
-      $original = array_pop(\Event::$events[$event]);
+      $original = array_pop(Event::$events[$event]);
 
-      \Event::listen($event, function () use ($self, $original, $event) {
+      Event::listen($event, function () use ($self, $original, $event) {
         list(, $func) = explode('.', $event, 2);
         $func = 'on'.ucfirst($func);
 

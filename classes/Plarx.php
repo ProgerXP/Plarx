@@ -1,7 +1,6 @@
 <?php namespace Px;
 
 use Laravel\Config;
-use Laravel\Event;
 
 class Plarx {
   static $dropBuffer = true;

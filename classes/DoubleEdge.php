@@ -573,27 +573,17 @@ class DoubleEdge extends \Laravel\Routing\Controller {
   // 400) for processing by ->makeResponse().
   //
   //* $func str - method to be called like 'get_index', 'do_login' or 'put_edit'.
-  //* $params array, mixed - method arguments; autoconverted to array.
+  //* $params array, mixed - method arguments; everything but array is wrapped into
+  //  one including null.
   function act($func, $params = array()) {
     if (Request::ajax() and method_exists($this, "ajax_$func")) {
       $func = "ajax_$func";
     }
 
-    $scalars = $params = arrize($params);
-
-    foreach ($scalars as &$s) {
-      if (!is_scalar($s)) {
-        $s = gettype($s);
-      } elseif ($s === '') {
-        $s = "''";
-      }
-    }
-
-    $class = get_class($this);
-    \Log::info("Act: {$this->name}@$func ( ".join(', ', $scalars)." )");
+    \Log::info("Act: {$this->name}@$func ( ".Event::paramStr($params)." )");
 
     try {
-      return call_user_func_array(array($this, $func), $params);
+      return call_user_func_array(array($this, $func), arrizeAny($params));
     } catch (ENoInput $e) {
       if (!isset($e->key)) {
         return E_INPUT;
