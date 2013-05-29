@@ -298,4 +298,16 @@ class HLEx {
 
     return $string;
   }
+
+  // Create plain text representation of a HTML string.
+  //* $html str
+  //* $quick bool - if false collapses successive whitespace into one with a regexp.
+  //= str
+  //? toStr('<p>Hello, <b>Markus</b>.</p>')
+  //      //=> 'Hello, Markus'
+  static function toStr($html, $quick = false) {
+    $str = html_entity_decode(strip_tags($html), ENT_QUOTES, 'utf-8');
+    $quick or $str = preg_replace('/(\s)+/u', '\1', $str);
+    return trim($str);
+  }
 }
