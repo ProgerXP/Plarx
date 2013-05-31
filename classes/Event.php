@@ -1,7 +1,7 @@
 <?php namespace Px;
 
 // Extends standard Laravel event facility with a few useful methods.
-class Event extends \Event {
+class Event extends \Laravel\Event {
   // Like listen() but adds $callback as the first handler, in front of others.
   static function preview($event, $callback) {
     $pool = &static::$events[$event];
