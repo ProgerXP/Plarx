@@ -10,7 +10,7 @@ class Profiler extends \Laravel\Profiling\Profiler {
   //= int adds an ellipsis for calls given more than this number of arguments
   static $sqlMaxTraceArgs = 3;
 
-  static $override = array('laravel.query', 'laravel.done');
+  static $override = array('laravel.log', 'laravel.query', 'laravel.done');
 
   static function attach() {
     parent::attach();
@@ -27,6 +27,10 @@ class Profiler extends \Laravel\Profiling\Profiler {
         return call_user_func_array(array($self, $func), $args);
       });
     }
+  }
+
+  static function onLog($original, $type, $message) {
+    static::$data['logs'][] = array(HLEx::q($type), HLEx::q($message));
   }
 
   static function onQuery($original, $sql, $bindings, $time) {
