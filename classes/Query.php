@@ -193,11 +193,15 @@ class Query extends \Laravel\Database\Eloquent\Query implements \IteratorAggrega
       'filter'            => true,
       // Max value for ?limit=X; <= 0 value turns the restriction off.
       'maxLimit'          => 100,
+      'paginate'          => true,
     );
 
     extract($options, EXTR_SKIP);
 
-    $filter and $this->filterBy(Input::get('filter'), $tablePrefix);
+    if ($filter) {
+      $filter === true and $filter = Input::get('filter');
+      $this->filterBy($filter, $tablePrefix);
+    }
 
     if ($sort = Input::get("{$prefix}sort") and $this->model->has($sort)) {
       foreach ((array) $sort as $column) {
@@ -206,20 +210,22 @@ class Query extends \Laravel\Database\Eloquent\Query implements \IteratorAggrega
       }
     }
 
-    $limit = Input::get("{$prefix}limit");
-    $limit > 0 and $maxLimit > 0 and $limit = min($maxLimit, $limit);
+    if ($paginate) {
+      $limit = Input::get("{$prefix}limit");
+      $limit > 0 and $maxLimit > 0 and $limit = min($maxLimit, $limit);
 
-    $page = max(1, (int) Input::get("{$prefix}page"));
-    // working around hardcoded 'page' Input var name for standard Paginator.
-    $oldPage = Input::get('page');
-    Input::merge(compact('page'));
-    $this->paginator = $this->paginate($limit);
-    Input::merge(array('page' => $oldPage));
+      $page = max(1, (int) Input::get("{$prefix}page"));
+      // working around hardcoded 'page' Input var name for standard Paginator.
+      $oldPage = Input::get('page');
+      Input::merge(compact('page'));
+      $this->paginator = $this->paginate($limit);
+      Input::merge(array('page' => $oldPage));
 
-    // don't call for_page() because paginate() will break - it will attempt to
-    // SELECT COUNT(*) FROM table LIMIT X OFFSET Y and fail because of OFFSET <> 0.
-    $modelClass = get_class($this->model);
-    $this->for_page($page, $modelClass::$per_page);
+      // don't call for_page() because paginate() will break - it will attempt to
+      // SELECT COUNT(*) FROM table LIMIT X OFFSET Y and fail because of OFFSET <> 0.
+      $modelClass = get_class($this->model);
+      $this->for_page($page, $modelClass::$per_page);
+    }
 
     return $this;
   }
@@ -262,11 +268,12 @@ class Query extends \Laravel\Database\Eloquent\Query implements \IteratorAggrega
   }
 
   // Usually called from a filter_XXX() method to filter numeric columns. See filterBy().
-  // Has this form:   [<|>]int
+  // Has this form:   [=|<|>]int
   //
   //? >50         // above 50
   //? <38.3       // below 38.3
   //? 127         // exactly 127
+  //? =127        // the same
   //? >-127       // above -127
   //? 0xabc       // equals to '0'
   //? abc         // equals to '0'
@@ -276,6 +283,44 @@ class Query extends \Laravel\Database\Eloquent\Query implements \IteratorAggrega
       case '>':   $this->where($field, '>', (int) substr($value, 1)); break;
       case '<':   $this->where($field, '<', (int) substr($value, 1)); break;
       default:    $this->where($field, '=', (int) $value); break;
+      }
+    }
+  }
+
+  // Usually called from a filter_XXX() method to filter string columns. See filterBy().
+  // Has this form:   [=|^|%|?]str
+  // Leading/trailing spaces are trimmed when using no/'=' prefix.
+  //
+  //? ^start      // starts with "start"
+  //? %st_rt      // matches LIKE wildcard: "st*rt"
+  //? ?st_rt      // contains exact substring "st_rt"
+  //? start       // is exactly "start"
+  //? =start      // the same
+  //? =           // matches empty string
+  //? ''          // empty string is not filtered upon
+  function filterStr($field, $value) {
+    if ("$value" !== '') {
+      if ($value[0] === '=') {
+        $this->where($field, '=', trim( substr($value, 1) ));
+      } else {
+        $wrapped = $this->table->grammar->wrap($field);
+
+        switch ($value[0]) {
+        case '^':
+          $cond = '= 1';
+        case '?':
+          isset($cond) or $cond = '!= 0';
+          $this->raw_where("LOCATE(?, $wrapped) $cond", array($value));
+          break;
+
+        case '%':
+          $this->raw_where("$wrapped LIKE ?", array($value));
+          break;
+
+        default:
+          $this->where($field, '=', trim($value));
+          break;
+        }
       }
     }
   }
@@ -292,6 +337,8 @@ class Query extends \Laravel\Database\Eloquent\Query implements \IteratorAggrega
     if (($value = ltrim($value, '=')) !== '') {
       if ($mod = strpbrk($value[0], '><') !== false) {
         list($mod, $value) = array($value[0], substr($value, 1));
+      } else {
+        $mod = '=';
       }
 
       if (filter_var($value, FILTER_VALIDATE_INT) === false) {
