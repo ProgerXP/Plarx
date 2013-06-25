@@ -28,6 +28,8 @@ class Event extends \Laravel\Event {
         return gettype($value);
       } elseif ($value === '') {
         return "''";
+      } elseif (strlen("$value") > 20) {
+        return substr("$value", 0, 15).'...';
       } else {
         return $value;
       }

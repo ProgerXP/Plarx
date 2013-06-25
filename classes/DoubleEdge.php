@@ -97,7 +97,7 @@ class DoubleEdge extends \Laravel\Routing\Controller {
   //          or other HTTP verb (in any char case) METHOD is assumed to be
   //          'verb_' + $this->currentAction; if there's no ->$currentAction
   //          nothing is called
-  //= Closure called as function ($this) and expected to return an array of vars
+  //= Closure ($this, array $currentVars) and expected to return an array of vars
   //= array   variables to pass to ->$layout
   //
   //? 'delete'
@@ -131,6 +131,20 @@ class DoubleEdge extends \Laravel\Routing\Controller {
   //? array('title' => 'winTitle', 'metaDesc')
   //    // sets full view's $winTitle to layout's $title and $metaDesc - to $metaDesc
   public $fullViewVars = array('title');
+
+  // By default DoubleEdge will server response errors (404, 403, 500, etc.) by
+  // application-wise or bundle-view "error.CODE" or "error" views. If this is
+  // enabled each action's view will be used instead and named variable will be
+  // set to numeric response code. Can be set from within action's method.
+  //
+  //= int     same as array(int)
+  //= array of int response codes on which layout will be used
+  //= true    uses layout on any response code
+  //= Closure ($code, array $data, $self) returns:
+  //          - array - variables to pass to $this->layout
+  //          - mixed - use default server response view (action-independent)
+  //= false   disable per-action views
+  public $layoutRescue = false;
 
   // Name of action being executed. On nested calls to ->response() this always
   // contains the topmost (outermost) action.
@@ -449,10 +463,23 @@ class DoubleEdge extends \Laravel\Routing\Controller {
       $ctl = &$data['controller'];
       $data = array_filter($data, 'is_object');
       $ctl and $data['controller'] = isset($ctl->name) ? $ctl->name : get_class($ctl);
-    }
+    } else {
+      $rescue = $this->layoutRescue;
+      is_int($rescue) and $rescue = array($rescue);
 
-    $prefix = \Bundle::identifier($this->bundle, '');
-    return Response::adaptErrorOf($prefix, $code, $data);
+      if ($rescue instanceof \Closure) {
+        $vars = $rescue($code, $data, $self);
+        $rescue = is_array($vars);
+        $rescue and $data = $vars;
+      }
+
+      if ($rescue === true or (is_array($rescue) and in_array($code, $rescue))) {
+        return $this->arrayResponse(array('ok' => $code) + $data);
+      } else {
+        $prefix = \Bundle::identifier($this->bundle, '');
+        return Response::adaptErrorOf($prefix, $code, $data);
+      }
+    }
   }
 
   // Populates error page info with more variables related to current request like
@@ -500,7 +527,7 @@ class DoubleEdge extends \Laravel\Routing\Controller {
           $vars = call_user_func_array(array($this, $method), $args);
         }
       } elseif ($vars instanceof \Closure) {
-        $vars = $vars($this);
+        $vars = $vars($this, $data);
       }
 
       $vars = $this->makeTypedResponse($vars);
