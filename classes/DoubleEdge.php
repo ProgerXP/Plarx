@@ -443,7 +443,7 @@ class DoubleEdge extends \Laravel\Routing\Controller {
       $response = Response::make($response);
     } elseif (! $response instanceof \Laravel\Response) {
       // this whould be unexpected.
-      throw new Exception("Invalid value type returned by makeTypedResponse().");
+      throw new EPlarx("Invalid value type returned by makeTypedResponse().");
     }
 
     return $response;
@@ -475,11 +475,11 @@ class DoubleEdge extends \Laravel\Routing\Controller {
 
       if ($rescue === true or (is_array($rescue) and in_array($code, $rescue))) {
         return $this->arrayResponse(array('ok' => $code) + $data);
-      } else {
-        $prefix = \Bundle::identifier($this->bundle, '');
-        return Response::adaptErrorOf($prefix, $code, $data);
       }
     }
+
+    $prefix = \Bundle::identifier($this->bundle, '');
+    return Response::adaptErrorOf($prefix, $code, $data);
   }
 
   // Populates error page info with more variables related to current request like

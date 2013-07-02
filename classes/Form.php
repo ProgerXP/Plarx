@@ -6,7 +6,7 @@ class Form extends \Laravel\Form {
   //= null
   static function quick($action, $errors, $fields = null) {
     if (!isset($fields)) {
-      $fielsd = $errors;
+      $fields = $errors;
       $errors = array();
     }
 
