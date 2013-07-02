@@ -184,7 +184,7 @@ class Plarx {
 
     \Autoloader::directories(array(path('app').'models', path('app').'libraries'));
 
-    if (!Request::cli() and Config::get('session.driver') !== '') {
+    if (!Request::cli() and ($useSessions = Config::get('session.driver') !== '')) {
       \Session::load();
     }
 
@@ -193,7 +193,11 @@ class Plarx {
     // extended Blade relies on Plarx' View and Section classes present in global NS.
     static::$supersede ? Blade::sharpen() : \Blade::sharpen();
 
-    \View::share('ok', Request::cli() ? null : \Session::get('ok'));
+    \View::share('ok', null);
+
+    if ($useSessions and !Request::cli()) {
+      \View::share('ok', \Session::get('ok'));
+    }
   }
 
   // Handler for 'laravel.query' event logging queries to some local file.
