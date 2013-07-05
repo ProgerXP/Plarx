@@ -184,9 +184,8 @@ class Plarx {
 
     \Autoloader::directories(array(path('app').'models', path('app').'libraries'));
 
-    if (!Request::cli() and ($useSessions = Config::get('session.driver') !== '')) {
-      \Session::load();
-    }
+    $useSession = (!Request::cli() and Config::get('session.driver'));
+    $useSession and \Session::load();
 
     Config::get('application.profiler') and Profiler::attach();
 
@@ -194,10 +193,7 @@ class Plarx {
     static::$supersede ? Blade::sharpen() : \Blade::sharpen();
 
     \View::share('ok', null);
-
-    if ($useSessions and !Request::cli()) {
-      \View::share('ok', \Session::get('ok'));
-    }
+    $useSession and \View::share('ok', \Session::get('ok'));
   }
 
   // Handler for 'laravel.query' event logging queries to some local file.
