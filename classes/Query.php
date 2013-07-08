@@ -268,12 +268,13 @@ class Query extends \Laravel\Database\Eloquent\Query implements \IteratorAggrega
   }
 
   // Usually called from a filter_XXX() method to filter numeric columns. See filterBy().
-  // Has this form:   [=|<|>]int
+  // Has this form:   [=|!|<|>]int
   //
   //? >50         // above 50
   //? <38.3       // below 38.3
   //? 127         // exactly 127
   //? =127        // the same
+  //? !127        // anything but 127
   //? >-127       // above -127
   //? 0xabc       // equals to '0'
   //? abc         // equals to '0'
@@ -282,6 +283,7 @@ class Query extends \Laravel\Database\Eloquent\Query implements \IteratorAggrega
       switch ($value[0]) {
       case '>':   $this->where($field, '>', (int) substr($value, 1)); break;
       case '<':   $this->where($field, '<', (int) substr($value, 1)); break;
+      case '!':   $this->where($field, '<>', (int) substr($value, 1)); break;
       default:    $this->where($field, '=', (int) $value); break;
       }
     }

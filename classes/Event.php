@@ -48,8 +48,8 @@ class Event extends \Laravel\Event {
     $result = static::until($event, $parameters);
 
     if ($msg = $checker($result) and $msg !== true) {
-      throw new \RuntimeException("No event handlers attached to [$event] or they".
-                                  " have generated $msg: ".var_export($result, true));
+      throw new \EEvent("No event handlers attached to [$event] or they".
+                         " have generated $msg: ".var_export($result, true));
     } else {
       return $result;
     }
@@ -64,7 +64,7 @@ class Event extends \Laravel\Event {
       static::fire("$type.inserted", $model);
       return $model;
     } else {
-      throw new \RuntimeException("Cannot insert new record for $model.");
+      throw new \EEvent("Cannot insert new record for $model.");
     }
   }
 }

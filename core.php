@@ -77,6 +77,10 @@ class ENoAuth extends EPlarx {
   }
 }
 
+// Exception used when an event didn't return expected value or some other conditions
+// have not been met.
+class EEvent extends EPlarx { }
+
 /*-----------------------------------------------------------------------
 | GLOBAL FUNCTIONS
 |----------------------------------------------------------------------*/

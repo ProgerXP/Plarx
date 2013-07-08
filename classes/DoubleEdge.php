@@ -474,6 +474,7 @@ class DoubleEdge extends \Laravel\Routing\Controller {
       }
 
       if ($rescue === true or (is_array($rescue) and in_array($code, $rescue))) {
+        \Log::info("Layout rescued on response code $code.");
         return $this->arrayResponse(array('ok' => $code) + $data);
       }
     }

@@ -76,6 +76,10 @@ class Plarx {
 
   // Implements better globalization URL slug than default Laravel implementation.
   static function localize() {
+    if (Request::cli()) {
+      return;
+    }
+
     $uri = ltrim(\Laravel\URI::current(), '/');
     $languages = (array) Config::get('application.all_languages');
     // disable Laravel's default globalization mechanism.

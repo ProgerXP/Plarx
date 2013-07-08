@@ -137,14 +137,14 @@ class HLEx {
 
       foreach ($options as $value => $label) {
         if (is_array($label)) {
-          $attrs = array_except($label, 'label') + compact('value');
+          $optAttrs = array_except($label, 'label') + compact('value');
           $label = &$label['label'];
         } else {
-          $attrs = compact('value');
+          $optAttrs = compact('value');
         }
 
-        $attrs['value'] == $selected and $attrs['selected'] = 'selected';
-        $result .= static::wrap_q('option', $label, $attrs);
+        $optAttrs['value'] === $selected and $optAttrs['selected'] = 'selected';
+        $result .= static::wrap_q('option', $label, $optAttrs);
       }
 
       $isOptgroup and $result .= '</optgroup>';
@@ -206,7 +206,7 @@ class HLEx {
     foreach ((array) $options as $value => $label) {
       if (isset($label)) {
         $type = 'radio';
-        $checked = $value == $selected ? 'checked' : null;
+        $checked = $value === $selected ? 'checked' : null;
 
         $radio = static::tag('input', compact('type', 'name', 'value', 'checked'));
         $result[] = static::label("$radio $label");
