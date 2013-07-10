@@ -224,6 +224,8 @@ class DoubleEdge extends \Laravel\Routing\Controller {
   //    //=> 'delete_message' or 'get_message' if there's no 'delete_message' method
   //
   function methodName($action, $method = null, $ajax = null) {
+    isset($ajax) or $ajax = Request::ajax();
+
     if ($this->restful) {
       $method === null and $method = Request::method();
       $func = strtolower("{$method}_$action");
@@ -236,10 +238,7 @@ class DoubleEdge extends \Laravel\Routing\Controller {
       $func = "do_$action";
     }
 
-    if ( isset($ajax) ? $ajax : Request::ajax() ) {
-      $func = "ajax_$func";
-    }
-
+    $ajax and $func = "ajax_$func";
     return $func;
   }
 
