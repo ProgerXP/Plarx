@@ -60,9 +60,9 @@ class Request extends \Laravel\Request {
     $languages = array();
 
     foreach (explode(',', $accepts) as $piece) {
-      @list($lang, $quality) = explode(';', "$piece;");
+      list($lang, $quality) = explode(';', "$piece;");
 
-      if (@$quality and substr($quality, 0, 2) == 'q=') {
+      if ($quality and substr($quality, 0, 2) == 'q=') {
         $quality = floatval(trim( substr($quality, 2) ));
       } else {
         $quality = 1.0;

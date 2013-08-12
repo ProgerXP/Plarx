@@ -97,8 +97,14 @@ class Str extends \Laravel\Str {
 
     foreach ($params as $key => $value) {
       if (is_int($key) and is_string($value)) {
-        @list($key, $value) = explode(' ', trim($value), 2);
-        isset($value) and $value = ltrim($value);
+        $key = trim($value);
+
+        if (strrchr($key, ' ')) {
+          list($key, $value) = explode(' ', $key, 2);
+          $value = ltrim($value);
+        } else {
+          $value = null;
+        }
       }
 
       $result[$key] = $value;

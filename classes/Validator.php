@@ -105,8 +105,8 @@ class Validator extends \Laravel\Validator {
       return $this->error($attribute, 'upload');
     }
 
-    @list($width, $height) = getimagesize($upload['tmp_name']);
-    @list($min, $max) = $params;
+    list($width, $height) = ((array) getimagesize($upload['tmp_name'])) + array(0, 0);
+    list($min, $max) = ((array) $params) + array(0, 0);
 
     if (!$width or !$height) {
       return $this->error($attribute, 'image.unrecognized');
@@ -119,7 +119,7 @@ class Validator extends \Laravel\Validator {
 
   // Used by validate_image().
   protected function checkImageSize($attribute, $size, $mustLarger, $imWidth, $imHeight) {
-    @list($relWidth, $relHeight) = explode('x', strtr($size, '*X', 'xx'), 2);
+    list($relWidth, $relHeight) = explode('x', strtr("{$size}x", '*X', 'xx'), 2);
 
     foreach (array('Width', 'Height') as $dimension) {
       if (${"rel$dimension"} != ${"im$dimension"} and

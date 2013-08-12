@@ -492,7 +492,7 @@ class DoubleEdge extends \Laravel\Routing\Controller {
     return arrize($data, 'msg') + array(
       'controller'        => $this,
       'action'            => $this->currentAction,
-      'dbg'               => $this->name.'@'.@$action,
+      'dbg'               => $this->name.'@'.$this->currentAction,
     );
   }
 
