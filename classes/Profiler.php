@@ -53,7 +53,7 @@ class Profiler extends \Laravel\Profiling\Profiler {
 
     $tracer = function ($call) {
       if ($class = array_get($call, 'class')) {
-        $class = class_basename($class).@$call['type'];
+        $class = class_basename($class).array_pick($call, 'type');
       }
 
       $args = array();
@@ -87,7 +87,7 @@ class Profiler extends \Laravel\Profiling\Profiler {
 
       if ($file = &$call['file']) {
         $result .= "&larr; <span style='color: navy'>".basename($file).'</span>';
-        @$call['line'] and $result .= ':'.$call['line'];
+        isset($call['line']) and $result .= ':'.$call['line'];
       }
 
       return "\n  $result";
