@@ -37,7 +37,7 @@ class Str extends \Laravel\Str {
     if ($error = json_last_error()) {
       throw new EJSON('Cannot decode a JSON object', $error);
     } else {
-      return $result;
+      return $data;
     }
   }
 
