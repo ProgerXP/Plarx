@@ -53,7 +53,7 @@ class Profiler extends \Laravel\Profiling\Profiler {
 
     $tracer = function ($call) {
       if ($class = array_get($call, 'class')) {
-        $class = class_basename($class).array_pick($call, 'type');
+        $class = class_basename($class).array_get($call, 'type');
       }
 
       $args = array();
