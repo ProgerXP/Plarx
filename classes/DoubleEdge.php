@@ -717,7 +717,13 @@ class DoubleEdge extends \Laravel\Routing\Controller {
       }
     } elseif ($this->layout) {
       $this->layout[0] === '.' and $this->layout = $this->name.$this->layout;
-      return parent::layout();
+
+      // Overwriting default Laravel\View with ours.
+      if (starts_with($this->layout, 'name: ')) {
+        return View::of(substr($this->layout, 6));
+      } else {
+        return View::make($this->layout);
+      }
     }
   }
 
