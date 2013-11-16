@@ -393,7 +393,7 @@ class DoubleEdge extends \Laravel\Routing\Controller {
       $action = $this->name.'@'.$this->currentAction;
       $error = "Invalid controller response type on [$action]: ".
                (is_object($response) ? get_class($response) : gettype($response));
-      \Log::error($error);
+      Log::error_DoubleEdge($error);
 
       $response = $this->errorResponse(E_SERVER);
     }
@@ -473,7 +473,7 @@ class DoubleEdge extends \Laravel\Routing\Controller {
       }
 
       if ($rescue === true or (is_array($rescue) and in_array($code, $rescue))) {
-        \Log::info("Layout rescued on response code $code.");
+        Log::info_DoubleEdge("Layout rescued on response code $code.");
         return $this->arrayResponse(array('ok' => $code) + $data);
       }
     }
@@ -515,15 +515,16 @@ class DoubleEdge extends \Laravel\Routing\Controller {
           if ($last = $this->currentAction) {
             $method = strtolower($method)."_$last";
           } else {
-            \Log::warn("{$this->name()}->\$layoutVars is set to HTTP verb '$method'".
-                       " but \$currentAction is empty - cannot determine full action".
-                       " name to call and merge variables with.");
+            $msg = "{$this->name()}->\$layoutVars is set to HTTP verb '$method'".
+                   " but \$currentAction is empty - cannot determine full action".
+                   " name to call and merge variables with.";
+            Log::warn_DoubleEdge($msg);
             $method = '';
           }
         }
 
         if ($method) {
-          \Log::info("Layout vars: {$this->name}@$method ( )");
+          Log::info_DoubleEdge("Layout vars: {$this->name}@$method ( )");
           $vars = call_user_func_array(array($this, $method), $args);
         }
       } elseif ($vars instanceof \Closure) {
@@ -607,7 +608,7 @@ class DoubleEdge extends \Laravel\Routing\Controller {
       $func = "ajax_$func";
     }
 
-    \Log::info("Act: {$this->name}@$func ( ".Event::paramStr($params)." )");
+    Log::info_DoubleEdge("Act: {$this->name}@$func ( ".Event::paramStr($params)." )");
 
     try {
       return call_user_func_array(array($this, $func), arrizeAny($params));
@@ -618,11 +619,11 @@ class DoubleEdge extends \Laravel\Routing\Controller {
         return Validator::withError($e->key, 'required');
       } else {
         $action = $this->name.'@'.$this->currentAction;
-        \Log::warn("No request variable [{$e->key}] given to [$action].");
+        Log::warn_DoubleEdge("No request variable [{$e->key}] given to [$action].");
         return E_INPUT;
       }
     } catch (ENoAuth $e) {
-      \Log::warn($e->getMessage());
+      Log::warn_DoubleEdge($e->getMessage());
       // equivalent to E_DENIED or E_UNAUTH - see makeResponse().
       return false;
     }
@@ -656,7 +657,7 @@ class DoubleEdge extends \Laravel\Routing\Controller {
   //= mixed   subject to ->makeResponse() convertion rules
   function catch404($isAJAX, $action, array $params) {
     $isAJAX and $action = "ajax_$action";
-    \Log::warn("No controller method [{$this->name}@$action] - returning 404.");
+    Log::warn_DoubleEdge("No controller method [{$this->name}@$action] - returning 404.");
     return $this->errorResponse(E_NONE);
   }
 

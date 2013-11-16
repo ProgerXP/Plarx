@@ -16,8 +16,7 @@ class Event extends \Laravel\Event {
 
     $s = count($events) == 1 ? '' : 's';
     $until = $halt ? ' (first result)' : '';
-    \Log::info("Event$s$until: ".join(', ', $events).
-               " ( ".static::paramStr($parameters)." )");
+    Log::info_Event("$s$until: ".join(', ', $events)." ( ".static::paramStr($parameters)." )");
 
     return parent::fire($events, $parameters, $halt);
   }

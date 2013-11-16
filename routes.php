@@ -2,7 +2,7 @@
 
 \Route::filter('plarx::csrf', function () {
   if (Request::forged()) {
-    \Log::warn("plarx::csrf filter: denying access due to missing/wrong CSRF token.");
+    Log::warn_PlarxCSRF("denying access due to missing/wrong CSRF token.");
     return Response::postprocess(Response::adaptError(E_INPUT));
   }
 });
@@ -20,14 +20,13 @@
   $user = \Auth::user();
 
   if ($user and !method_exists($user, 'can')) {
-    $msg = "plarx::perms filter: object returned by Auth::user()".
-           " (".get_class($user).") doesn't have can() method - returning 403.";
-    \Log::error($msg);
+    $msg = " object returned by Auth::user() (".get_class($user).")".
+           " doesn't have can() method - returning 403.";
+    Log::error_PlarxPerms($msg);
     $deny = true;
   } elseif (!$user) {
     $name = $controller ? ' '.$controller->name : '';
-    \Log::info("plarx::perms filter: controller$name needs authorized user,".
-               " denying access for guest.");
+    Log::info_PlarxPerms("controller$name needs authorized user, denying access for guest.");
     $deny = true;
   } elseif ($features) {
     $toMiss = $toHave = array();
@@ -45,9 +44,9 @@
 
     if ($reasons) {
       $name = $controller ? ' '.$controller->name : '';
-      $msg = "plarx::perms filter: denying access to controller$name for user".
-             " {$user->id} due to ".join(' and ', $reasons).'.';
-      \Log::info($msg);
+      $msg = "denying access to controller$name for user {$user->id} due to".
+             " ".join(' and ', $reasons).'.';
+      Log::info_PlarxPerms($msg);
       $deny = true;
     }
   }

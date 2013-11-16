@@ -50,7 +50,7 @@ class View extends \Laravel\View {
         $path = Event::until(static::loader, array($overBundle, $overView.$tail));
 
         if ($path !== null) {
-          \Log::info("Overlay: $bundle::$view -> [$overBundle::$overView]$tail");
+          Log::info_View("Overlay: $bundle::$view -> [$overBundle::$overView]$tail");
           return $path;
         }
       }
