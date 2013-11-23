@@ -249,7 +249,17 @@ class Query extends \Laravel\Database\Eloquent\Query implements \IteratorAggrega
     $model = $this->model;
 
     foreach ((array) $model::$fields as $field) {
-      $values = (array) array_get($input, $field);
+      $values = array();
+
+      if (isset($input[$field])) {
+        $values = (array) array_get($input, $field);
+      } elseif (isset($input["{$field}_op"])) {
+        $vals = (array) $input["{$field}_val"];
+
+        foreach ((array) $input["{$field}_op"] as $i => $op) {
+          isset($vals[$i]) and $values[] = $op.$vals[$i];
+        }
+      }
 
       foreach ($values as $value) {
         $value = trim($value);
@@ -351,7 +361,15 @@ class Query extends \Laravel\Database\Eloquent\Query implements \IteratorAggrega
 
       if (is_int($timestamp)) {
         $date = with(new \DateTime)->setTimestamp($timestamp);
-        $date = $date->format($this->table->grammar->datetime);
+
+        if (!strrchr($value, ' ')) {
+          // Only date portion, match that day without exact time.
+          $field = \DB::raw('DATE('.$this->table->grammar->wrap($field).')');
+          $date = strtok($date->format($this->table->grammar->datetime), ' ');
+        } else {
+          $date = $date->format($this->table->grammar->datetime);
+        }
+
         $this->where($field, $mod, $date);
       }
     }
