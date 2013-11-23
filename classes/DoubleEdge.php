@@ -670,7 +670,14 @@ class DoubleEdge extends \Laravel\Routing\Controller {
   //= Redirect
   function back($default = '/', $inputVar = '_back') {
     $input = Input::get($inputVar);
-    return $input ? Redirect::to($input) : Redirect::back($default);
+    $input or $input = Request::referrer();
+    $host = parse_url($input, PHP_URL_HOST);
+
+    if ($host and $host !== Request::header('host')) {
+      $input = null;
+    }
+
+    return Redirect::to($input ?: $default);
   }
 
   // Calls AJAX handler corresponding to current action. Must be called from within
