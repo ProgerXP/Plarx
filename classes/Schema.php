@@ -7,4 +7,10 @@ class Schema extends \Laravel\Database\Schema {
       return new MySqlSchema($connection);
     }
   }
+
+  protected function unsigned(\Laravel\Database\Schema\Table $table, \Laravel\Fluent $column) {
+    if ($column->unsigned or $column->increment) {
+      return ' UNSIGNED';
+    }
+  }
 }
