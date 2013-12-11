@@ -219,6 +219,7 @@ class Query extends \Laravel\Database\Eloquent\Query implements \IteratorAggrega
       $oldPage = Input::get('page');
       Input::merge(compact('page'));
       $this->paginator = $this->paginate($limit);
+      $this->paginator->appends( Input::except('page') );
       Input::merge(array('page' => $oldPage));
 
       // don't call for_page() because paginate() will break - it will attempt to
