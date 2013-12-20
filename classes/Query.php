@@ -180,7 +180,7 @@ class Query extends \Laravel\Database\Eloquent\Query implements \IteratorAggrega
   // Sets constrains on this query to follow general request patter for sorted,
   // filtered, limited and paginated list.
   //
-  //? /goods?sort=price&desc=1&page=3&limit=25&filter[created_at]=2-01-2012
+  //? /goods?sort=!price&page=3&limit=25&filter[created_at]=2-01-2012
   function commonList($options = array()) {
     is_array($options) or $options = array('prefix' => $options);
 
@@ -203,9 +203,10 @@ class Query extends \Laravel\Database\Eloquent\Query implements \IteratorAggrega
       $this->filterBy($filter, $tablePrefix);
     }
 
-    if ($sort = Input::get("{$prefix}sort") and $this->model->has($sort)) {
-      foreach ((array) $sort as $column) {
-        $desc = Input::get("{$prefix}desc");
+    foreach ((array) Input::get("{$prefix}sort") as $column) {
+      $desc = (substr($column, 0, 1) === '!' or Input::get("{$prefix}desc"));
+      $column = trim($column, '!');
+      if ($this->model->has($column)) {
         $this->order_by($tablePrefix.$column, $desc ? 'desc' : 'asc');
       }
     }
